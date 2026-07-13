@@ -28,12 +28,43 @@ test_sorted = sorted(test_contours,
                     key = cv.contourArea,
                     reverse=True)
 
-print(len(test_sorted), cv.contourArea(test_sorted[0]))
+#print(len(test_sorted), cv.contourArea(test_sorted[0]))
 
 test_copy = test.copy()
 
 test_contoured = cv.drawContours(test_copy, test_sorted,
                                  0, color = (230, 30, 0),
                                  thickness=5)
-plt.imshow(test_contoured)
+#plt.imshow(test_contoured)
+#plt.show()
+
+test_arclen = cv.arcLength(test_sorted[0], True)
+test_approxcurve = cv.approxPolyDP(test_sorted[0],
+                                   0.02* test_arclen,
+                                   True)
+
+test_approxcurve = test_approxcurve.reshape(4, 2)
+
+test_sums = test_approxcurve.sum(axis=1)
+top_left = test_approxcurve[np.argmin(test_sums)]
+bottom_right = test_approxcurve[np.argmax(test_sums)]
+
+test_diffs = np.diff(test_approxcurve, axis=1)
+bottom_left = test_approxcurve[np.argmax(test_diffs)]
+top_right = test_approxcurve[np.argmin(test_diffs)]
+
+
+#width = 600, height = 800
+test_rect = np.array([top_left, top_right, bottom_right, bottom_left],
+                      dtype=np.float32)
+test_dest = np.array([(0,0), (600,0), (600,1000), (0,1000)],
+                     dtype=np.float32)
+
+test_matrix = cv.getPerspectiveTransform(test_rect,
+                                         test_dest)
+
+test_warped = cv.warpPerspective(test,
+                                 test_matrix,
+                                 (600, 1000))
+plt.imshow(test_warped)
 plt.show()
