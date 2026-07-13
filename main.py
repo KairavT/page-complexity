@@ -54,17 +54,19 @@ bottom_left = test_approxcurve[np.argmax(test_diffs)]
 top_right = test_approxcurve[np.argmin(test_diffs)]
 
 
-#width = 600, height = 800
 test_rect = np.array([top_left, top_right, bottom_right, bottom_left],
                       dtype=np.float32)
-test_dest = np.array([(0,0), (600,0), (600,1000), (0,1000)],
+
+width = int(np.linalg.norm(top_left - top_right))
+height = int(np.linalg.norm(top_left - bottom_left))
+
+test_dest = np.array([(0,0), (width,0), (width,height), (0,height)],
                      dtype=np.float32)
 
-test_matrix = cv.getPerspectiveTransform(test_rect,
-                                         test_dest)
+test_matrix = cv.getPerspectiveTransform(test_rect, test_dest)
 
 test_warped = cv.warpPerspective(test,
                                  test_matrix,
-                                 (600, 1000))
+                                 (width, height))
 plt.imshow(test_warped)
 plt.show()
