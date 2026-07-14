@@ -68,5 +68,16 @@ test_matrix = cv.getPerspectiveTransform(test_rect, test_dest)
 test_warped = cv.warpPerspective(test,
                                  test_matrix,
                                  (width, height))
-plt.imshow(test_warped)
+
+test_bw = cv.cvtColor(test_warped, cv.COLOR_BGR2GRAY)
+
+test_binary = cv.adaptiveThreshold(
+    src=test_bw,
+    maxValue=255, 
+    adaptiveMethod=cv.ADAPTIVE_THRESH_GAUSSIAN_C,
+    thresholdType=cv.THRESH_BINARY,
+    blockSize=21,
+    C=15
+)
+plt.imshow(test_binary, cmap='gray')
 plt.show()
