@@ -2,82 +2,72 @@ import cv2 as cv
 import matplotlib.pyplot as plt
 import numpy as np
 
-test = cv.imread('images/IMG_8262.jpg')
-test_grey = cv.cvtColor(test, cv.COLOR_BGR2GRAY)
-
-#plt.imshow(test)
-#plt.show()
-#plt.imshow(test_grey, cmap="gray")
-#plt.show()
-
-test_blurred = cv.GaussianBlur(test_grey, (5,5), sigmaX=0)
-#plt.imshow(test_blurred, cmap="gray")
-#plt.show()
-test_canny = cv.Canny(test_blurred, 50, 150)
-#plt.imshow(test_canny,cmap="gray")
-#plt.show()
-
-kernel = np.ones((5,5), np.uint8)
-test_dilated = cv.dilate(test_canny, kernel)
-
-test_contours, _ = cv.findContours(test_dilated, 
-                                 cv.RETR_EXTERNAL,
-                                 cv.CHAIN_APPROX_NONE)
-
-test_sorted = sorted(test_contours,
-                    key = cv.contourArea,
-                    reverse=True)
-
-#print(len(test_sorted), cv.contourArea(test_sorted[0]))
-
-test_copy = test.copy()
-
-test_contoured = cv.drawContours(test_copy, test_sorted,
-                                 0, color = (230, 30, 0),
-                                 thickness=5)
-#plt.imshow(test_contoured)
-#plt.show()
-
-test_arclen = cv.arcLength(test_sorted[0], True)
-test_approxcurve = cv.approxPolyDP(test_sorted[0],
-                                   0.02* test_arclen,
-                                   True)
-
-test_approxcurve = test_approxcurve.reshape(4, 2)
-
-test_sums = test_approxcurve.sum(axis=1)
-top_left = test_approxcurve[np.argmin(test_sums)]
-bottom_right = test_approxcurve[np.argmax(test_sums)]
-
-test_diffs = np.diff(test_approxcurve, axis=1)
-bottom_left = test_approxcurve[np.argmax(test_diffs)]
-top_right = test_approxcurve[np.argmin(test_diffs)]
 
 
-test_rect = np.array([top_left, top_right, bottom_right, bottom_left],
-                      dtype=np.float32)
+def clean_page(path):
+    img = cv.imread(path)
+    img_grey = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 
-width = int(np.linalg.norm(top_left - top_right))
-height = int(np.linalg.norm(top_left - bottom_left))
+    blurred = cv.GaussianBlur(img_grey, (5,5), sigmaX=0)
+    canny = cv.Canny(blurred, 50, 150)
 
-test_dest = np.array([(0,0), (width,0), (width,height), (0,height)],
-                     dtype=np.float32)
+    kernel = np.ones((5,5), np.uint8)
+    dilated = cv.dilate(canny, kernel)
 
-test_matrix = cv.getPerspectiveTransform(test_rect, test_dest)
+    contours, _ = cv.findContours(dilated, 
+                                    cv.RETR_EXTERNAL,
+                                    cv.CHAIN_APPROX_NONE)
 
-test_warped = cv.warpPerspective(test,
-                                 test_matrix,
-                                 (width, height))
+    contours_sorted = sorted(contours,
+                        key = cv.contourArea,
+                        reverse=True)
 
-test_bw = cv.cvtColor(test_warped, cv.COLOR_BGR2GRAY)
+    img_copy = img.copy()
 
-test_binary = cv.adaptiveThreshold(
-    src=test_bw,
-    maxValue=255, 
-    adaptiveMethod=cv.ADAPTIVE_THRESH_GAUSSIAN_C,
-    thresholdType=cv.THRESH_BINARY,
-    blockSize=21,
-    C=15
-)
-plt.imshow(test_binary, cmap='gray')
+    arclen = cv.arcLength(contours_sorted[0], True)
+    approxcurve = cv.approxPolyDP(contours_sorted[0],
+                                    0.02* arclen,
+                                    True)
+
+    approxcurve = approxcurve.reshape(4, 2)
+
+    sums = approxcurve.sum(axis=1)
+    top_left = approxcurve[np.argmin(sums)]
+    bottom_right = approxcurve[np.argmax(sums)]
+
+    diffs = np.diff(approxcurve, axis=1)
+    bottom_left = approxcurve[np.argmax(diffs)]
+    top_right = approxcurve[np.argmin(diffs)]
+
+
+    rect = np.array([top_left, top_right, bottom_right, bottom_left],
+                        dtype=np.float32)
+
+    width = int(np.linalg.norm(top_left - top_right))
+    height = int(np.linalg.norm(top_left - bottom_left))
+
+    dest = np.array([(0,0), (width,0), (width,height), (0,height)],
+                        dtype=np.float32)
+
+    matrix = cv.getPerspectiveTransform(rect, dest)
+
+    warped = cv.warpPerspective(img,
+                                    matrix,
+                                    (width, height))
+
+    img_bw = cv.cvtColor(warped, cv.COLOR_BGR2GRAY)
+
+    img_binary = cv.adaptiveThreshold(
+        src=img_bw,
+        maxValue=255, 
+        adaptiveMethod=cv.ADAPTIVE_THRESH_GAUSSIAN_C,
+        thresholdType=cv.THRESH_BINARY,
+        blockSize=21,
+        C=15
+    )
+
+    return img_binary
+
+result = clean_page('images/IMG_8262.jpg')
+plt.imshow(result, cmap='gray')
 plt.show()
