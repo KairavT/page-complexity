@@ -76,13 +76,17 @@ def clean_page(path):
 
     return img_binary
 
+def density(img_bin):
+    non_black = cv.countNonZero(img_bin)
+    pixel_count = img_bin.size 
+    return 1 - (non_black/pixel_count)
+
 pics = ['images/IMG_8262.jpg', 'images/IMG_8285.jpg',
         'images/IMG_8286.jpg', 'images/IMG_8289.jpg']
 
 for path in pics:
     try:
         result = clean_page(path)
-        plt.imshow(result, cmap='gray')
-        plt.show()
+        print(density(result))
     except ValueError as e:
         print(path, e)
