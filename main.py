@@ -29,7 +29,15 @@ def clean_page(path):
                                     0.02* arclen,
                                     True)
 
+    
+    if len(approxcurve) != 4:
+        raise ValueError(f'Incorrect number of corners found in image, '
+                        f'{len(approxcurve)} instead of 4')
+
+
     approxcurve = approxcurve.reshape(4, 2)
+    
+        
 
     sums = approxcurve.sum(axis=1)
     top_left = approxcurve[np.argmin(sums)]
@@ -62,12 +70,19 @@ def clean_page(path):
         maxValue=255, 
         adaptiveMethod=cv.ADAPTIVE_THRESH_GAUSSIAN_C,
         thresholdType=cv.THRESH_BINARY,
-        blockSize=21,
-        C=15
+        blockSize=17,
+        C=11
     )
 
     return img_binary
 
-result = clean_page('images/IMG_8262.jpg')
-plt.imshow(result, cmap='gray')
-plt.show()
+pics = ['images/IMG_8262.jpg', 'images/IMG_8285.jpg',
+        'images/IMG_8286.jpg', 'images/IMG_8289.jpg']
+
+for path in pics:
+    try:
+        result = clean_page(path)
+        plt.imshow(result, cmap='gray')
+        plt.show()
+    except ValueError as e:
+        print(path, e)
