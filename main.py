@@ -85,6 +85,17 @@ def black_count(img_bin):
     black_rows = img_bin ==0 
     black_pixels = black_rows.sum(axis=1)
     return black_pixels
+
+def line_spacing(blk_count):
+    blk_count = blk_count[5:-5]
+    gaps = blk_count < 10
+
+    gaps_int = gaps.astype(int)
+    diffs = np.diff(gaps_int)
+
+    starts = np.where(diffs == 1)[0][:-1]
+    ends = np.where(diffs == -1)[0][1:]
+    return np.median(ends-starts)
     
 
 
@@ -94,8 +105,9 @@ pics = ['images/IMG_8262.jpg', 'images/IMG_8285.jpg',
 
 for path in pics:
     try:
-        result = clean_page(path)          
-        plt.plot(black_count(result))
-        plt.show()
+        result = clean_page(path)        
+        blacks = black_count(result)
+        spacing = line_spacing(blacks)
+        print(path, spacing)
     except ValueError as e:
         print(path, e)
