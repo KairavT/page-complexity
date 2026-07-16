@@ -97,8 +97,17 @@ def line_spacing(blk_count):
     ends = np.where(diffs == -1)[0][1:]
     return np.median(ends-starts)
     
+def text_size(blk_count):
+    blk_count = blk_count[5:-5]
+    gaps = blk_count < 10
 
+    gaps_int = gaps.astype(int)
+    diffs = np.diff(gaps_int)
 
+    starts = np.where(diffs == -1)[0]
+    ends = np.where(diffs == 1)[0]
+    print(len(starts) == len(ends))
+    return np.median(ends-starts)
 
 pics = ['images/IMG_8262.jpg', 'images/IMG_8285.jpg',
         'images/IMG_8286.jpg', 'images/IMG_8289.jpg']
@@ -108,6 +117,7 @@ for path in pics:
         result = clean_page(path)        
         blacks = black_count(result)
         spacing = line_spacing(blacks)
-        print(path, spacing)
+        size = text_size(blacks)
+        print(path, spacing, size)
     except ValueError as e:
         print(path, e)
