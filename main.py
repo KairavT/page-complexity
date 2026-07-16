@@ -81,12 +81,21 @@ def density(img_bin):
     pixel_count = img_bin.size 
     return 1 - (non_black/pixel_count)
 
+def black_count(img_bin):
+    black_rows = img_bin ==0 
+    black_pixels = black_rows.sum(axis=1)
+    return black_pixels
+    
+
+
+
 pics = ['images/IMG_8262.jpg', 'images/IMG_8285.jpg',
         'images/IMG_8286.jpg', 'images/IMG_8289.jpg']
 
 for path in pics:
     try:
-        result = clean_page(path)
-        print(density(result))
+        result = clean_page(path)          
+        plt.plot(black_count(result))
+        plt.show()
     except ValueError as e:
         print(path, e)
