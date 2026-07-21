@@ -131,6 +131,6 @@ for path in pics:
         res = score(size, spacing, dens)
 
         print(f'{path} has a page complexity score' \
-              'of {res:.2%} ')
+              f'of {res:.2%} ')
     except ValueError as e:
         print(path, e)
