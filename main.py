@@ -106,8 +106,16 @@ def text_size(blk_count):
 
     starts = np.where(diffs == -1)[0]
     ends = np.where(diffs == 1)[0]
-    print(len(starts) == len(ends))
     return np.median(ends-starts)
+
+def score(txt_size, space, dens0):
+    txt_norm = 1 - (txt_size - 10)/(30 - 10)
+    space_norm = 1 - (space - 2)/(10-2)
+    dens_norm = (dens0)/(0.2)
+    #min/max values above are estimated
+
+    return (txt_norm + space_norm + dens_norm)/3
+
 
 pics = ['images/IMG_8262.jpg', 'images/IMG_8285.jpg',
         'images/IMG_8286.jpg', 'images/IMG_8289.jpg']
@@ -118,6 +126,11 @@ for path in pics:
         blacks = black_count(result)
         spacing = line_spacing(blacks)
         size = text_size(blacks)
-        print(path, spacing, size)
+        dens = density(result)
+
+        res = score(size, spacing, dens)
+
+        print(f'{path} has a page complexity score' \
+              'of {res:.2%} ')
     except ValueError as e:
         print(path, e)
